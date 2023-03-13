@@ -1,0 +1,48 @@
+name: Test Parachain Progress
+
+on:
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
+
+jobs:
+  test-parachain-progress:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+
+      # Steps taken from https://github.com/actions/cache/blob/master/examples.md#rust---cargo
+    - name: Cache cargo registry
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+        components: rustfmt, clippy
+        target: wasm32-unknown-unknown
+        override: true
+        default: true
+
+    - name: Build Code
+      run: cargo build --release
+
+    - name: Setup zombienet
+      run: source scripts/zombienet_setup.sh
+
+    - name: Run parachain progress test
+      run: zombienet-linux-x64 test --provider native tests/zombienet/parachain_progress.zndsl
