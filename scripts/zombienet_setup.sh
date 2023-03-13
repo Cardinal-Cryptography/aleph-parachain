@@ -3,7 +3,7 @@
 # Prepares zombienet for usage
 #
 # This script is meant to be run from repository root directory
-# with `source `
+# with `source scripts/zombienet_setup.sh`
 
 cd local-network
 
@@ -26,3 +26,5 @@ fi
 export PATH=$(pwd):$PATH
 
 cd ..
+
+docker build . -t aleph-parachain-node
