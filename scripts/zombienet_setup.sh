@@ -18,8 +18,9 @@ fi
 
 if ! command -v polkadot &> /dev/null ; then
 
-    # Setup zombienet: prepare polkadot binary
-    echo 'y' | ./zombienet-linux-x64 setup polkadot
+    # Setup zombienet: prepare polkadot binary.
+    # Reports false errors.
+    echo 'y' | ./zombienet-linux-x64 setup polkadot || true
 fi
 
 cd ..
