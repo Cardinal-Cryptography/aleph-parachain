@@ -38,8 +38,8 @@ jobs:
         override: true
         default: true
 
-    #- name: Build Code
-    #  run: cargo build --release
+    - name: Build Code
+      run: cargo build --release
 
     - name: Setup zombienet
       run: source scripts/zombienet_setup.sh
