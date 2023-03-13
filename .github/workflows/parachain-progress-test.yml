@@ -38,11 +38,14 @@ jobs:
         override: true
         default: true
 
-    - name: Build Code
-      run: cargo build --release
+    #- name: Build Code
+    #  run: cargo build --release
 
     - name: Setup zombienet
       run: source scripts/zombienet_setup.sh
+
+    - name: Update github path
+      run: echo "$GITHUB_WORKSPACE/local-network" >> $GITHUB_PATH
 
     - name: Run parachain progress test
       run: zombienet-linux-x64 test --provider native tests/zombienet/parachain_progress.zndsl

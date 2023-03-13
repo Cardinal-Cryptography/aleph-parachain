@@ -6,6 +6,8 @@
 #
 # Meant to be run from repository root directory
 
-source scripts/zombienet_setup.sh
+./scripts/zombienet_setup.sh
+
+export PATH=$(pwd)/local-network/:$PATH
 
 zombienet-linux-x64 spawn --provider native local-network/config.toml
