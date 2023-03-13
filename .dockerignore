@@ -1,4 +1,4 @@
 **/target
 target
 .*
-!/target/debug/aleph-parachain-node
+!/target/release/aleph-parachain-node
