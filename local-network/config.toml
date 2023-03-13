@@ -6,7 +6,7 @@ default_args = [ "-lparachain=debug" ]
 chain = "rococo-local"
 
   [[relaychain.node_groups]]
-  name = "a"
+  name = "rococo-validator"
   count = 4
 
 [[parachains]]
