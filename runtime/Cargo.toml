@@ -1,8 +1,8 @@
 [package]
 name = "aleph-parachain-runtime"
 version = "0.1.0"
-authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Runtime, ready for hacking together a parachain."
+authors = ["Cardinal"]
+description = "Runtime of the aleph parachain"
 license = "Unlicense"
 homepage = "https://substrate.io"
 repository = "https://github.com/paritytech/cumulus/"

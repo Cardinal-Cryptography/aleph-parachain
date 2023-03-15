@@ -1,8 +1,8 @@
 [package]
 name = "aleph-parachain-node"
 version = "0.1.0"
-authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Node, ready for hacking together a parachain."
+authors = ["Cardinal"]
+description = "Aleph parachain Node."
 license = "Unlicense"
 homepage = "https://substrate.io"
 repository = "https://github.com/paritytech/cumulus/"

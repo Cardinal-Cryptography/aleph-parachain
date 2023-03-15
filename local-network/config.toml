@@ -15,5 +15,5 @@ id = 2106
   [[parachains.collator_groups]]
     count = 2
     name = "aleph-collator"
-    command = "~/aleph-parachain/target/release/aleph-parachain-node"
+    command = "target/release/aleph-parachain-node"
     image = "aleph-parachain-node"
