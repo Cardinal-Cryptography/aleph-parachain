@@ -50,7 +50,7 @@ jobs:
       run: cargo test
 
     - name: Prune unused packages from cargo cache
-      uses: actions-rs/cargo@v2
+      uses: actions-rs/cargo@v1
       with:
         command: cache
         args: clean-unref
