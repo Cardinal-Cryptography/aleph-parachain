@@ -19,7 +19,7 @@ jobs:
       uses: arduino/setup-protoc@v1
 
     - name: Cache cargo registry
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cargo/registry
@@ -36,6 +36,12 @@ jobs:
         target: wasm32-unknown-unknown
         override: true
         default: true
+
+    - name: Install cargo-cache
+      uses: actions-rs/cargo@v1
+      with:
+        command: install
+        args: cargo-cache
 
     - name: Build Code
       run: cargo build --release

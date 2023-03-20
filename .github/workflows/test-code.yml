@@ -19,7 +19,7 @@ jobs:
       uses: arduino/setup-protoc@v1
 
     - name: Cache cargo registry
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cargo/registry
@@ -37,8 +37,11 @@ jobs:
         override: true
         default: true
 
-    - name: Setup cache
-      uses: Swatinem/rust-cache@v2
+    - name: Install cargo-cache
+      uses: actions-rs/cargo@v1
+      with:
+        command: install
+        args: cargo-cache
 
     - name: Check and Lint Code
       run: cargo +nightly clippy -- -D warnings
