@@ -1,4 +1,4 @@
-name: Test Code
+name: Test Parachain Progress
 
 on:
   pull_request:
@@ -9,12 +9,12 @@ on:
     - main
 
 jobs:
-  test-code:
+  test-parachain-progress:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
 
@@ -43,14 +43,17 @@ jobs:
         command: install
         args: cargo-cache
 
-    - name: Check and Lint Code
-      run: cargo +nightly clippy -- -D warnings
+    - name: Build Code
+      run: cargo build --release
 
-    - name: Check Code
-      run: cargo check
+    - name: Setup zombienet
+      run: source scripts/zombienet_setup.sh
 
-    - name: Test Code
-      run: cargo test
+    - name: Update github path
+      run: echo "$GITHUB_WORKSPACE/local-network" >> $GITHUB_PATH
+
+    - name: Run parachain progress test
+      run: zombienet-linux-x64 test --provider native tests/zombienet/parachain_progress.zndsl
 
     - name: Prune unused packages from cargo cache
       uses: actions-rs/cargo@v1
