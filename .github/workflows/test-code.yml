@@ -11,21 +11,15 @@ on:
 jobs:
   test-code:
     runs-on: self-hosted
+    env:
+      RUST_BACKTRACE: full
+      RUSTC_WRAPPER: sccache
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
-
-    - name: Cache cargo registry
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Install toolchain
       uses: actions-rs/toolchain@v1
@@ -37,12 +31,6 @@ jobs:
         override: true
         default: true
 
-    - name: Install cargo-cache
-      uses: actions-rs/cargo@v1
-      with:
-        command: install
-        args: cargo-cache
-
     - name: Check and Lint Code
       run: cargo +nightly clippy -- -D warnings
 
@@ -51,16 +39,4 @@ jobs:
 
     - name: Test Code
       run: cargo test
-
-    - name: Prune unused packages from cargo cache
-      uses: actions-rs/cargo@v1
-      with:
-        command: cache
-        args: clean-unref
-
-    - name: Prune sources from cargo cache
-      uses: actions-rs/cargo@v1
-      with:
-        command: cache
-        args: --autoclean
 
