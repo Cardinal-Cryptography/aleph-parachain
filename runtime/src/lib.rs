@@ -469,7 +469,6 @@ construct_runtime!(
 		AuraExt: cumulus_pallet_aura_ext = 24,
 
 		// XCM helpers.
-
 		XcmpQueue: cumulus_pallet_xcmp_queue = 30,
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
