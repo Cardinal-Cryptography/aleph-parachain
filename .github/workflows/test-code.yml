@@ -26,7 +26,7 @@ jobs:
         toolchain: nightly
         components: rustfmt, clippy
         target: wasm32-unknown-unknown
-        override: true
+        override: false
         default: true
 
     - name: Check and Lint Code

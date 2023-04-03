@@ -6,22 +6,14 @@
 
 cd local-network
 
-# Check if zombienet binary is missing
-if [ ! -f zombienet-linux-x64 ]; then
+# Download zombienet binary and make it executable
+wget -nc https://github.com/paritytech/zombienet/releases/download/v1.3.39/zombienet-linux-x64
+chmod +x zombienet-linux-x64
 
-    # Download zombienet binary
-    wget https://github.com/paritytech/zombienet/releases/download/v1.3.39/zombienet-linux-x64
 
-    # Make it executable
-    chmod +x zombienet-linux-x64
-fi
-
-if ! command -v polkadot &> /dev/null ; then
-
-    # Setup zombienet: prepare polkadot binary.
-    # Reports false errors.
-    echo 'y' | ./zombienet-linux-x64 setup polkadot || true
-fi
+# Setup zombienet: prepare polkadot binary.
+wget -nc https://github.com/paritytech/polkadot/releases/download/v0.9.40/polkadot
+chmod +x polkadot
 
 cd ..
 
