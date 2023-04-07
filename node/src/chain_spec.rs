@@ -1,5 +1,5 @@
 use cumulus_primitives_core::ParaId;
-use aleph_parachain_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use aleph_parachain_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT, SudoConfig};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -190,6 +190,9 @@ fn testnet_genesis(
 		},
 		balances: aleph_parachain_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+		},
+		sudo: SudoConfig {
+			key: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 		},
 		parachain_info: aleph_parachain_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: aleph_parachain_runtime::CollatorSelectionConfig {

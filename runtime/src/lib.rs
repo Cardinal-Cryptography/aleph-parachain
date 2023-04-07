@@ -362,6 +362,11 @@ parameter_types! {
 	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 }
 
+impl pallet_sudo::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+}
+
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
@@ -490,7 +495,10 @@ construct_runtime!(
 
 		// Bridge support.
 		BridgeMillauGrandpa: pallet_bridge_grandpa = 60,
-	}
+	
+        // Sudo
+		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Event<T>, Storage} = 100,
+    }
 );
 
 #[cfg(feature = "runtime-benchmarks")]
