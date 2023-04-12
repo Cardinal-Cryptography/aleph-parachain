@@ -3,10 +3,12 @@ name: Test Parachain Progress
 on:
   pull_request:
     branches:
-    - main
+    - "main"
+    - "bridge-prototype"
   push:
     branches:
-    - main
+    - "main"
+    - "bridge-prototype"
 
 jobs:
   test-parachain-progress:

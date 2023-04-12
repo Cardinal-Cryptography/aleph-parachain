@@ -3,10 +3,13 @@ name: Test Code
 on:
   pull_request:
     branches:
-    - main
+    - "main"
+    - "bridge-prototype"
   push:
     branches:
-    - main
+    - "main"
+    - "bridge-prototype"
+
 
 jobs:
   test-code:
