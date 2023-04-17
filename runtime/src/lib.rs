@@ -9,14 +9,24 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod weights;
 pub mod xcm_config;
 
+use crate::xcm_config::{UniversalLocation, XcmRouter};
+use bp_messages::LaneId;
+use bridge_runtime_common::messages::{
+	source::TargetHeaderChainAdapter, target::SourceHeaderChainAdapter, MessageBridge,
+};
+use codec::{Decode, Encode};
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
-	transaction_validity::{TransactionSource, TransactionValidity},
+	traits::{
+		AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, IdentifyAccount,
+		SignedExtension, Verify,
+	},
+	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, MultiSignature,
 };
 
@@ -26,7 +36,9 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 use bp_runtime::HeaderId;
+use bridge_runtime_common::generate_bridge_reject_obsolete_headers_and_messages;
 use frame_support::{
+	RuntimeDebug,
 	construct_runtime,
 	dispatch::DispatchClass,
 	parameter_types,
@@ -50,12 +62,46 @@ pub use sp_runtime::BuildStorage;
 
 // Polkadot imports
 use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
-
 use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 
 // XCM Imports
 use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
+
+// generate signed extension that rejects obsolete bridge transactions
+generate_bridge_reject_obsolete_headers_and_messages! {
+	RuntimeCall, AccountId,
+	// Grandpa
+	BridgeMillauGrandpa,
+	// Messages
+	BridgeMillauMessages
+}
+
+/// Dummy signed extension that does nothing.
+#[derive(Encode, Decode, Debug, PartialEq, Eq, Clone, TypeInfo)]
+pub struct DummyBridgeRefundMillauMessages;
+
+impl SignedExtension for DummyBridgeRefundMillauMessages {
+	const IDENTIFIER: &'static str = "DummyBridgeRefundMillauMessages";
+	type AccountId = AccountId;
+	type Call = RuntimeCall;
+	type AdditionalSigned = ();
+	type Pre = ();
+
+	fn additional_signed(&self) -> Result<Self::AdditionalSigned, TransactionValidityError> {
+		Ok(())
+	}
+
+	fn pre_dispatch(
+		self,
+		_who: &Self::AccountId,
+		_call: &Self::Call,
+		_info: &DispatchInfoOf<Self::Call>,
+		_len: usize,
+	) -> Result<Self::Pre, TransactionValidityError> {
+		Ok(())
+	}
+}
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -363,8 +409,8 @@ parameter_types! {
 }
 
 impl pallet_sudo::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
@@ -463,6 +509,106 @@ impl pallet_bridge_grandpa::Config for Runtime {
 	type WeightInfo = pallet_bridge_grandpa::weights::BridgeWeight<Runtime>;
 }
 
+impl pallet_bridge_relayers::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Reward = Balance;
+	type PaymentProcedure =
+		bp_relayers::PayRewardFromAccount<pallet_balances::Pallet<Runtime>, AccountId>;
+	type WeightInfo = ();
+}
+
+const MILLAU_BRIDGE_XCM_LANE: LaneId = LaneId([0, 0, 0, 0]);
+
+/// Aleph Parachain chain from message lane point of view.
+#[derive(RuntimeDebug, Clone, Copy)]
+pub struct AlephParachain;
+
+impl bridge_runtime_common::messages::UnderlyingChainProvider for AlephParachain {
+	type Chain = bp_aleph_parachain::AlephParachain;
+}
+
+impl bridge_runtime_common::messages::ThisChainWithMessages for AlephParachain {
+	type RuntimeOrigin = RuntimeOrigin;
+}
+
+/// Millau chain from message lane point of view.
+#[derive(RuntimeDebug, Clone, Copy)]
+pub struct Millau;
+impl bridge_runtime_common::messages::UnderlyingChainProvider for Millau {
+	type Chain = bp_millau::Millau;
+}
+
+impl bridge_runtime_common::messages::BridgedChainWithMessages for Millau {}
+
+parameter_types! {
+	pub const MaxMessagesToPruneAtOnce: bp_messages::MessageNonce = 8;
+	pub const MaxUnrewardedRelayerEntriesAtInboundLane: bp_messages::MessageNonce =
+		bp_millau::MAX_UNREWARDED_RELAYERS_IN_CONFIRMATION_TX;
+	pub const MaxUnconfirmedMessagesAtInboundLane: bp_messages::MessageNonce =
+		bp_millau::MAX_UNCONFIRMED_MESSAGES_IN_CONFIRMATION_TX;
+	pub const RootAccountForPayments: Option<AccountId> = None;
+	pub const BridgedChainId: bp_runtime::ChainId = bp_runtime::MILLAU_CHAIN_ID;
+	pub ActiveOutboundLanes: &'static [bp_messages::LaneId] = &[MILLAU_BRIDGE_XCM_LANE];
+}
+
+/// Instance of the messages pallet used to relay messages to/from Millau chain.
+pub type WithMillauMessagesInstance = ();
+
+/// Maximal outbound payload size of Aleph Parachain -> Millau messages.
+pub type ToMillauMaximalOutboundPayloadSize =
+	bridge_runtime_common::messages::source::FromThisChainMaximalOutboundPayloadSize<
+		WithMillauMessageBridge,
+	>;
+
+/// Millau <-> AlephParachain message bridge.
+#[derive(RuntimeDebug, Clone, Copy)]
+pub struct WithMillauMessageBridge;
+
+impl MessageBridge for WithMillauMessageBridge {
+	const BRIDGED_MESSAGES_PALLET_NAME: &'static str =
+		bp_aleph_parachain::WITH_ALEPH_PARACHAIN_MESSAGES_PALLET_NAME;
+
+	type ThisChain = AlephParachain;
+	type BridgedChain = Millau;
+	type BridgedHeaderChain =
+		pallet_bridge_grandpa::GrandpaChainHeaders<Runtime, MillauGrandpaInstance>;
+}
+
+impl pallet_bridge_messages::Config<WithMillauMessagesInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = pallet_bridge_messages::weights::BridgeWeight<Runtime>;
+	type ActiveOutboundLanes = ActiveOutboundLanes;
+	type MaxUnrewardedRelayerEntriesAtInboundLane = MaxUnrewardedRelayerEntriesAtInboundLane;
+	type MaxUnconfirmedMessagesAtInboundLane = MaxUnconfirmedMessagesAtInboundLane;
+
+	type MaximalOutboundPayloadSize = ToMillauMaximalOutboundPayloadSize;
+	type OutboundPayload = bridge_runtime_common::messages::source::FromThisChainMessagePayload;
+
+	type InboundPayload = bridge_runtime_common::messages::target::FromBridgedChainMessagePayload;
+	type InboundRelayer = bp_millau::AccountId;
+	type DeliveryPayments = ();
+
+	type TargetHeaderChain = TargetHeaderChainAdapter<WithMillauMessageBridge>;
+	type LaneMessageVerifier =
+		bridge_runtime_common::messages::source::FromThisChainMessageVerifier<
+			WithMillauMessageBridge,
+		>;
+	type DeliveryConfirmationPayments = pallet_bridge_relayers::DeliveryConfirmationPaymentsAdapter<
+		Runtime,
+		WithMillauMessagesInstance,
+		frame_support::traits::ConstU128<100_000>,
+	>;
+
+	type SourceHeaderChain = SourceHeaderChainAdapter<WithMillauMessageBridge>;
+	type MessageDispatch = bridge_runtime_common::messages_xcm_extension::XcmBlobMessageDispatch<
+		bp_aleph_parachain::AlephParachain,
+		bp_millau::Millau,
+		xcm_builder::BridgeBlobDispatcher<XcmRouter, UniversalLocation>,
+		(),
+	>;
+	type BridgedChainId = BridgedChainId;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -495,10 +641,12 @@ construct_runtime!(
 
 		// Bridge support.
 		BridgeMillauGrandpa: pallet_bridge_grandpa = 60,
-	
-        // Sudo
+		BridgeMillauMessages: pallet_bridge_messages = 61,
+		BridgeRelayers: pallet_bridge_relayers = 62,
+
+		// Sudo
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Event<T>, Storage} = 100,
-    }
+	}
 );
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -514,6 +662,37 @@ mod benches {
 }
 
 impl_runtime_apis! {
+	impl bp_millau::MillauFinalityApi<Block> for Runtime {
+		fn best_finalized() -> Option<HeaderId<bp_millau::Hash, bp_millau::BlockNumber>> {
+			BridgeMillauGrandpa::best_finalized()
+		}
+	}
+
+	impl bp_millau::ToMillauOutboundLaneApi<Block> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			begin: bp_messages::MessageNonce,
+			end: bp_messages::MessageNonce,
+		) -> Vec<bp_messages::OutboundMessageDetails> {
+			bridge_runtime_common::messages_api::outbound_message_details::<
+				Runtime,
+				WithMillauMessagesInstance,
+			>(lane, begin, end)
+		}
+	}
+
+	impl bp_millau::FromMillauInboundLaneApi<Block> for Runtime {
+		fn message_details(
+			lane: bp_messages::LaneId,
+			messages: Vec<(bp_messages::MessagePayload, bp_messages::OutboundMessageDetails)>,
+		) -> Vec<bp_messages::InboundMessageDetails> {
+			bridge_runtime_common::messages_api::inbound_message_details::<
+				Runtime,
+				WithMillauMessagesInstance,
+			>(lane, messages)
+		}
+	}
+
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
 		fn slot_duration() -> sp_consensus_aura::SlotDuration {
 			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
@@ -648,12 +827,6 @@ impl_runtime_apis! {
 		}
 		fn query_length_to_fee(length: u32) -> Balance {
 			TransactionPayment::length_to_fee(length)
-		}
-	}
-
-	impl bp_millau::MillauFinalityApi<Block> for Runtime {
-		fn best_finalized() -> Option<HeaderId<bp_millau::Hash, bp_millau::BlockNumber>> {
-			BridgeMillauGrandpa::best_finalized()
 		}
 	}
 

@@ -1,10 +1,11 @@
+use aleph_parachain_runtime::{AccountId, AuraId, Signature, SudoConfig, EXISTENTIAL_DEPOSIT};
 use cumulus_primitives_core::ParaId;
-use aleph_parachain_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT, SudoConfig};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
+use aleph_parachain_runtime::BridgeMillauMessagesConfig;
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
@@ -191,9 +192,7 @@ fn testnet_genesis(
 		balances: aleph_parachain_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		sudo: SudoConfig {
-			key: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-		},
+		sudo: SudoConfig { key: Some(get_account_id_from_seed::<sr25519::Public>("Alice")) },
 		parachain_info: aleph_parachain_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: aleph_parachain_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
@@ -222,5 +221,9 @@ fn testnet_genesis(
 		},
 		transaction_payment: Default::default(),
 		bridge_millau_grandpa: Default::default(),
+		bridge_millau_messages: BridgeMillauMessagesConfig {
+			owner: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			..Default::default()
+		},
 	}
 }

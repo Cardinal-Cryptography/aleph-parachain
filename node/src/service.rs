@@ -27,8 +27,8 @@ use sc_network::NetworkBlock;
 use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
-use substrate_prometheus_endpoint::Registry;
 use sp_keystore::KeystorePtr;
+use substrate_prometheus_endpoint::Registry;
 
 /// Native executor type.
 pub struct ParachainNativeExecutor;
