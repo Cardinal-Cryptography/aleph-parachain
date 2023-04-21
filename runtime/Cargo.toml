@@ -22,16 +22,16 @@ scale-info = { version = "2.4.0", default-features = false, features = ["derive"
 smallvec = "1.10.0"
 
 # Bridge dependencies
-bp-messages = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
-bp-relayers = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
-bp-runtime = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
-bp-millau = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
-bridge-runtime-common = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
-pallet-bridge-grandpa = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
-pallet-bridge-messages = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
-pallet-bridge-relayers = { git = "https://github.com/paritytech/parity-bridges-common", branch = "master", default-features = false }
+bp-messages = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
+bp-relayers = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
+bp-runtime = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
+bp-millau = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
+bridge-runtime-common = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
+pallet-bridge-grandpa = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
+pallet-bridge-messages = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
+pallet-bridge-relayers = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
 
-bp-aleph-parachain = { git = "https://github.com/Cardinal-Cryptography/aleph-parachain-bridge-relay", branch = "A0-2314-millau-headers-relayer", default-features = false }
+bp-aleph-parachain = { git = "https://github.com/Cardinal-Cryptography/parity-bridges-common", branch = "A0-2314-aleph-parachain-millau-relay", default-features = false }
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, "branch" = "master" }
