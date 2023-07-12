@@ -1,5 +1,5 @@
-use cumulus_primitives_core::ParaId;
 use aleph_parachain_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use cumulus_primitives_core::ParaId;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -110,7 +110,7 @@ pub fn development_config() -> ChainSpec {
 		None,
 		None,
 		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			relay_chain: "westend-local".into(), // You MUST set this to the correct network!
 			para_id: 2106,
 		},
 	)
@@ -171,7 +171,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		Some(properties),
 		// Extensions
 		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			relay_chain: "westend-local".into(), // You MUST set this to the correct network!
 			para_id: 2106,
 		},
 	)
