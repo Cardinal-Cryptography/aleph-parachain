@@ -2,7 +2,7 @@ watch:
 	cargo watch -s 'WASM_BUILD_WORKSPACE_HINT=${PWD} CARGO_TARGET_DIR=/tmp/aleph-parachain/target/ cargo clippy -- -D warnings' -c
 
 clippy:
-	WASM_BUILD_WORKSPACE_HINT=${PWD} CARGO_TARGET_DIR=/tmp/aleph-parachain/target/ cargo clipy -- -D warnings
+	WASM_BUILD_WORKSPACE_HINT=${PWD} CARGO_TARGET_DIR=/tmp/aleph-parachain/target/ cargo clippy -- -D warnings
 
 test:
 	WASM_BUILD_WORKSPACE_HINT=${PWD} CARGO_TARGET_DIR=/tmp/aleph-parachain/target/ cargo test
