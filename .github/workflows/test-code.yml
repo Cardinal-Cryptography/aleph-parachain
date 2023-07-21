@@ -30,8 +30,7 @@ jobs:
         default: true
 
     - name: Check and Lint Code
-      run: cargo +nightly clippy -- -D warnings
+      run: make clippy
 
     - name: Test Code
-      run: cargo test
-
+      run: make test

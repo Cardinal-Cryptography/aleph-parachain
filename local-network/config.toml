@@ -3,17 +3,17 @@ default_image = "docker.io/paritypr/polkadot:latest"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
 
-chain = "rococo-local"
+chain = "westend-local"
 
-  [[relaychain.node_groups]]
-  name = "rococo-validator"
-  count = 4
+[[relaychain.node_groups]]
+name = "westend-validator"
+count = 4
 
 [[parachains]]
 id = 2106
 
-  [[parachains.collator_groups]]
-    count = 2
-    name = "aleph-collator"
-    command = "target/release/aleph-parachain-node"
-    image = "aleph-parachain-node"
+[[parachains.collator_groups]]
+count = 2
+name = "aleph-collator"
+command = "target/release/aleph-parachain-node"
+image = "aleph-parachain-node"

@@ -1,5 +1,5 @@
-use cumulus_primitives_core::ParaId;
 use aleph_parachain_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use cumulus_primitives_core::ParaId;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -15,7 +15,7 @@ const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-	TPublic::Pair::from_string(&format!("//{}", seed), None)
+	TPublic::Pair::from_string(&format!("//{seed}"), None)
 		.expect("static values are valid; qed")
 		.public()
 }
@@ -110,7 +110,7 @@ pub fn development_config() -> ChainSpec {
 		None,
 		None,
 		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			relay_chain: "westend-local".into(), // You MUST set this to the correct network!
 			para_id: 2106,
 		},
 	)
@@ -171,7 +171,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		Some(properties),
 		// Extensions
 		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			relay_chain: "westend-local".into(), // You MUST set this to the correct network!
 			para_id: 2106,
 		},
 	)
