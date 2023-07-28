@@ -26,12 +26,12 @@ rustfmt: # Check formatting
 
 .PHONY: parachain-progress-test
 parachain-progress-test: # Run the parachain progress test.
-parachain-progress-test: zombienet release-node
+parachain-progress-test: zombienet short-session-node-image
 	zombienet-linux-x64 test --provider native tests/zombienet/parachain_progress.zndsl
 
 .PHONY: run-local-network
 run-local-network: # Run a test network of 4 relay validators and 2 parachain collators.
-run-local-network: release-node zombienet
+run-local-network: short-session-node-image zombienet
 	zombienet-linux-x64 spawn --provider native local-network/config.toml
 
 .PHONY: zombienet
@@ -48,6 +48,11 @@ local-network/zombienet-linux-x64: # Download the zombienet binary.
 	mv /tmp/zombienet-linux-x64 local-network/
 	chmod +x local-network/zombienet-linux-x64
 
-.PHONY: release-node
-release-node: # Rebuild the parachain node in release mode.
-	cargo build --release -p aleph-parachain-node
+.PHONY: short-session-node
+short-session-node: # Rebuild the parachain node in release mode with short-session enabled (for use in local testing).
+	cargo build --release -p aleph-parachain-node -F short-session
+
+.PHONY: short-session-node-image
+short-session-node-image: # Build a docker image for the parachain node in release mode with short-session enabled (for use in local testing).
+short-session-node-image: short-session-node
+	docker build -t aleph-parachain-node .
