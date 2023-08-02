@@ -22,7 +22,7 @@ use cumulus_relay_chain_interface::RelayChainInterface;
 // Substrate Imports
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use sc_consensus::ImportQueue;
-use sc_executor::NativeElseWasmExecutor;
+use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch};
 use sc_network::NetworkBlock;
 use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
@@ -30,10 +30,10 @@ use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerH
 use sp_keystore::SyncCryptoStorePtr;
 use substrate_prometheus_endpoint::Registry;
 
-/// Native executor type.
+// Our native executor instance.
 pub struct ParachainNativeExecutor;
 
-impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
+impl NativeExecutionDispatch for ParachainNativeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -44,14 +44,12 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
 		aleph_parachain_runtime::native_version()
 	}
 }
-
-type ParachainExecutor = NativeElseWasmExecutor<ParachainNativeExecutor>;
-
-type ParachainClient = TFullClient<Block, RuntimeApi, ParachainExecutor>;
-
+pub type ParachainRuntimeExecutor = ParachainNativeExecutor;
+type ParachainClient =
+	TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ParachainRuntimeExecutor>>;
 type ParachainBackend = TFullBackend<Block>;
-
 type ParachainBlockImport = TParachainBlockImport<Block, Arc<ParachainClient>, ParachainBackend>;
+type ParachainExecutor = NativeElseWasmExecutor<ParachainNativeExecutor>;
 
 /// Starts a `ServiceBuilder` for a full service.
 ///
@@ -263,7 +261,7 @@ async fn start_node_impl(
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			sync_service,
+			sync_service.clone(),
 			params.keystore_container.sync_keystore(),
 			force_authoring,
 			para_id,
