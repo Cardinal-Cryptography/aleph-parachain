@@ -22,18 +22,21 @@ use cumulus_relay_chain_interface::RelayChainInterface;
 // Substrate Imports
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use sc_consensus::ImportQueue;
-use sc_executor::{NativeElseWasmExecutor, NativeExecutionDispatch};
-use sc_network::NetworkBlock;
+use sc_executor::{
+	HeapAllocStrategy, NativeElseWasmExecutor, NativeExecutionDispatch, WasmExecutor,
+	DEFAULT_HEAP_ALLOC_STRATEGY,
+};
+use sc_network::{config::FullNetworkConfiguration, NetworkBlock};
 use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
-use sp_keystore::SyncCryptoStorePtr;
+use sp_keystore::KeystorePtr;
 use substrate_prometheus_endpoint::Registry;
 
 // Our native executor instance.
-pub struct ParachainNativeExecutor;
+pub struct ExecutorDispatch;
 
-impl NativeExecutionDispatch for ParachainNativeExecutor {
+impl NativeExecutionDispatch for ExecutorDispatch {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
@@ -44,12 +47,11 @@ impl NativeExecutionDispatch for ParachainNativeExecutor {
 		aleph_parachain_runtime::native_version()
 	}
 }
-pub type ParachainRuntimeExecutor = ParachainNativeExecutor;
+pub type ParachainRuntimeExecutor = ExecutorDispatch;
 type ParachainClient =
 	TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ParachainRuntimeExecutor>>;
 type ParachainBackend = TFullBackend<Block>;
 type ParachainBlockImport = TParachainBlockImport<Block, Arc<ParachainClient>, ParachainBackend>;
-type ParachainExecutor = NativeElseWasmExecutor<ParachainNativeExecutor>;
 
 /// Starts a `ServiceBuilder` for a full service.
 ///
@@ -80,12 +82,19 @@ pub fn new_partial(
 		})
 		.transpose()?;
 
-	let executor = ParachainExecutor::new(
-		config.wasm_method,
-		config.default_heap_pages,
-		config.max_runtime_instances,
-		config.runtime_cache_size,
-	);
+	let heap_pages = config
+		.default_heap_pages
+		.map_or(DEFAULT_HEAP_ALLOC_STRATEGY, |h| HeapAllocStrategy::Static { extra_pages: h as _ });
+	let executor =
+		sc_executor::NativeElseWasmExecutor::<ParachainRuntimeExecutor>::new_with_wasm_executor(
+			WasmExecutor::builder()
+				.with_execution_method(config.wasm_method)
+				.with_onchain_heap_alloc_strategy(heap_pages)
+				.with_offchain_heap_alloc_strategy(heap_pages)
+				.with_max_runtime_instances(config.max_runtime_instances)
+				.with_runtime_cache_size(config.runtime_cache_size)
+				.build(),
+		);
 
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
@@ -168,10 +177,12 @@ async fn start_node_impl(
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let transaction_pool = params.transaction_pool.clone();
 	let import_queue_service = params.import_queue.service();
+	let net_config = FullNetworkConfiguration::new(&parachain_config.network);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		build_network(BuildNetworkParams {
 			parachain_config: &parachain_config,
+			net_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			para_id,
@@ -211,7 +222,7 @@ async fn start_node_impl(
 		transaction_pool: transaction_pool.clone(),
 		task_manager: &mut task_manager,
 		config: parachain_config,
-		keystore: params.keystore_container.sync_keystore(),
+		keystore: params.keystore_container.keystore(),
 		backend,
 		network: network.clone(),
 		sync_service: sync_service.clone(),
@@ -262,7 +273,7 @@ async fn start_node_impl(
 			relay_chain_interface.clone(),
 			transaction_pool,
 			sync_service.clone(),
-			params.keystore_container.sync_keystore(),
+			params.keystore_container.keystore(),
 			force_authoring,
 			para_id,
 		)?;
@@ -281,6 +292,7 @@ async fn start_node_impl(
 			collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
 			relay_chain_slot_duration,
 			recovery_handle: Box::new(overseer_handle),
+			sync_service,
 		};
 
 		start_collator(params).await?;
@@ -294,6 +306,7 @@ async fn start_node_impl(
 			relay_chain_slot_duration,
 			import_queue: import_queue_service,
 			recovery_handle: Box::new(overseer_handle),
+			sync_service,
 		};
 
 		start_full_node(params)?;
@@ -352,7 +365,7 @@ fn build_consensus(
 	relay_chain_interface: Arc<dyn RelayChainInterface>,
 	transaction_pool: Arc<sc_transaction_pool::FullPool<Block, ParachainClient>>,
 	sync_oracle: Arc<SyncingService<Block>>,
-	keystore: SyncCryptoStorePtr,
+	keystore: KeystorePtr,
 	force_authoring: bool,
 	para_id: ParaId,
 ) -> Result<Box<dyn ParachainConsensus<Block>>, sc_service::Error> {
