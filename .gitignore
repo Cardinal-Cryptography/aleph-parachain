@@ -16,3 +16,6 @@
 .DS_Store
 .idea
 .vscode
+
+local-network/polkadot
+local-network/zombienet-linux-x64

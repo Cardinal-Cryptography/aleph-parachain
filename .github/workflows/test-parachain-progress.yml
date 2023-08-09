@@ -1,4 +1,4 @@
-name: Test Code
+name: Test Parachain Progress
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
     - main
 
 jobs:
-  test-code:
+  test-parachain-progress:
     runs-on: [self-hosted, Linux, X64, large]
     env:
       RUST_BACKTRACE: full
@@ -22,6 +22,4 @@ jobs:
     - name: "Install Rust toolchain"
       uses: Cardinal-Cryptography/aleph-node/.github/actions/install-rust-toolchain@5eda3cd85e7e3aec3f2db7a26631c65d52c4b9ea
 
-    - run: make lint
-
-    - run: make test
+    - run: make parachain-progress-test
