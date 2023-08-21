@@ -5,4 +5,6 @@ panic = "unwind"
 members = [
 	"node",
 	"runtime",
+	"pallets/aleph",
+	"bridge-primitives/aleph-header-chain",
 ]
