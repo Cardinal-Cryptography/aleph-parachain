@@ -2,7 +2,20 @@
 panic = "unwind"
 
 [workspace]
-members = [
-	"node",
-	"runtime",
-]
+members = ["node", "runtime", "aleph-header-chain", "pallet-bridge-aleph"]
+
+[workspace.dependencies]
+# parity-bridges-common
+bp-test-utils = { git = "https://github.com/paritytech/parity-bridges-common", rev = "9afb6d15", default-features = false }
+bp-header-chain = { git = "https://github.com/paritytech/parity-bridges-common", rev = "9afb6d15", default-features = false }
+bp-runtime = { git = "https://github.com/paritytech/parity-bridges-common", rev = "9afb6d15", default-features = false }
+
+# substrate
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-trie = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-application-crypto = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }

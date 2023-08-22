@@ -44,7 +44,7 @@ local-network/polkadot: # Download the polkadot binary.
 	chmod +x local-network/polkadot
 
 local-network/zombienet-linux-x64: # Download the zombienet binary.
-	wget -nc https://github.com/paritytech/zombienet/releases/download/v1.3.39/zombienet-linux-x64 -P /tmp
+	wget -nc https://github.com/paritytech/zombienet/releases/download/v1.3.56/zombienet-linux-x64 -P /tmp
 	mv /tmp/zombienet-linux-x64 local-network/
 	chmod +x local-network/zombienet-linux-x64
 
