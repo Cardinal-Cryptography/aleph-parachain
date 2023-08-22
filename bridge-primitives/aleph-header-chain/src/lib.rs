@@ -91,4 +91,5 @@ pub type BridgeAlephCallOf<C> = BridgeAlephCall<HeaderOf<C>>;
 pub trait ChainWithAleph: Chain {
 	const WITH_CHAIN_ALEPH_PALLET_NAME: &'static str;
 	const MAX_AUTHORITIES_COUNT: u32;
+	const MAX_HEADER_SIZE: u32;
 }

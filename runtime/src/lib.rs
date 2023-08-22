@@ -455,6 +455,12 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_bridge_aleph::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type BridgedChain = bp_aleph_zero::AlephZero;
+	type HeadersToKeep = ConstU32<20>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -484,6 +490,9 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		DmpQueue: cumulus_pallet_dmp_queue = 33,
+
+		// Bridge pallets.
+		BridgeAleph: pallet_bridge_aleph = 40,
 	}
 );
 
@@ -637,6 +646,12 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl bp_aleph_zero::AlephZeroFinalityApi<Block> for Runtime {
+		fn best_finalized() -> Option<bp_runtime::HeaderId<bp_aleph_zero::Hash, bp_aleph_zero::BlockNumber>> {
+			BridgeAleph::best_finalized()
+		}
+	}
+
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
 		fn collect_collation_info(header: &<Block as BlockT>::Header) -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info(header)
@@ -683,7 +698,7 @@ impl_runtime_apis! {
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			use frame_benchmarking::{Benchmarking, BenchmarkBatch, TrackedStorageKey};
+			use frame_benchmarking::{Benchmarking, BenchmarkBatch};
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {}

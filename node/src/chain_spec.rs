@@ -219,5 +219,6 @@ fn testnet_genesis(
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
 		transaction_payment: Default::default(),
+		bridge_aleph: Default::default(),
 	}
 }

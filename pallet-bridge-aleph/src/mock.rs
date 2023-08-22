@@ -120,6 +120,7 @@ impl Chain for TestBridgedChain {
 impl ChainWithAleph for TestBridgedChain {
 	const WITH_CHAIN_ALEPH_PALLET_NAME: &'static str = "";
 	const MAX_AUTHORITIES_COUNT: u32 = 5;
+	const MAX_HEADER_SIZE: u32 = 256;
 }
 
 /// Return test externalities to use in tests.
