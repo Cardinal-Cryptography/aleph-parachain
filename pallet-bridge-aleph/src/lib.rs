@@ -35,10 +35,10 @@ use bp_header_chain::{HeaderChain, StoredHeaderData, StoredHeaderDataBuilder};
 use bp_runtime::{BlockNumberOf, HashOf, HeaderId, HeaderOf, OwnedBridgeModule};
 use frame_support::sp_runtime::traits::Header;
 
+mod benchmarking;
 #[cfg(test)]
 mod mock;
 mod storage_types;
-mod benchmarking;
 
 use storage_types::StoredAuthoritySet;
 

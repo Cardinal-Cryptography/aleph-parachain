@@ -2,7 +2,7 @@
 panic = "unwind"
 
 [workspace]
-members = ["node", "runtime", "aleph-header-chain", "pallet-bridge-aleph"]
+members = ["node", "runtime", "bridge-primitives/aleph-header-chain", "bridge-primitives/chain-aleph-zero", "pallet-bridge-aleph"]
 
 [workspace.dependencies]
 # parity-bridges-common
@@ -13,6 +13,7 @@ bp-runtime = { git = "https://github.com/paritytech/parity-bridges-common", rev 
 # substrate
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 sp-trie = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }

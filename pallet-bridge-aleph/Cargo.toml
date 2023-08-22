@@ -15,7 +15,7 @@ scale-info = { version = "2.6.0", default-features = false, features = [
 # Bridge Dependencies
 bp-runtime = { workspace = true }
 bp-header-chain = { workspace = true }
-bp-aleph-header-chain = { path = "../aleph-header-chain", default-features = false }
+bp-aleph-header-chain = { path = "../bridge-primitives/aleph-header-chain", default-features = false }
 
 # Substrate Dependencies
 frame-support = { workspace = true }

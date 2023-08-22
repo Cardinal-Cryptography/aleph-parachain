@@ -76,6 +76,8 @@ parachain-info = { git = "https://github.com/paritytech/cumulus.git", branch = "
 
 # Bridge dependencies
 pallet-bridge-aleph = { path = "../pallet-bridge-aleph", default-features = false }
+bp-aleph-zero = { path = "../bridge-primitives/chain-aleph-zero", default-features = false }
+bp-runtime = { workspace = true }
 
 [features]
 default = ["std"]
@@ -107,9 +109,12 @@ std = [
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
 	"pallet-xcm/std",
+	"pallet-bridge-aleph/std",
 	"parachain-info/std",
 	"polkadot-parachain/std",
 	"polkadot-runtime-common/std",
+	"bp-aleph-zero/std",
+	"bp-runtime/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",

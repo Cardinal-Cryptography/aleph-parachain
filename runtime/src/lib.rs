@@ -455,6 +455,12 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_bridge_aleph::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type BridgedChain = bp_aleph_zero::AlephZero;
+	type HeadersToKeep = ConstU32<20>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -484,6 +490,9 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm = 31,
 		CumulusXcm: cumulus_pallet_xcm = 32,
 		DmpQueue: cumulus_pallet_dmp_queue = 33,
+
+		// Bridge pallets.
+		BridgeAleph: pallet_bridge_aleph = 40,
 	}
 );
 
@@ -634,6 +643,12 @@ impl_runtime_apis! {
 		}
 		fn query_length_to_fee(length: u32) -> Balance {
 			TransactionPayment::length_to_fee(length)
+		}
+	}
+
+	impl bp_aleph_zero::AlephZeroFinalityApi<Block> for Runtime {
+		fn best_finalized() -> Option<bp_runtime::HeaderId<bp_aleph_zero::Hash, bp_aleph_zero::BlockNumber>> {
+			BridgeAleph::best_finalized()
 		}
 	}
 
