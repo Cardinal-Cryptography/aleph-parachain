@@ -71,7 +71,7 @@ pub mod test_utils {
 	use crate::AuthorityId;
 	use hex::FromHex;
 	use sp_application_crypto::Pair;
-	use sp_runtime::{testing::Header, ConsensusEngineId};
+	use sp_runtime::ConsensusEngineId;
 
 	pub type Seed = [u8; 32];
 	pub type Seeds = Vec<Seed>;
@@ -102,18 +102,18 @@ pub mod test_utils {
 		authority_set
 	}
 
-	pub fn generate_signature_set(header: &Header, seeds: &Seeds) -> SignatureSet {
+	pub fn generate_signature_set(header_hash: &[u8], seeds: &Seeds) -> SignatureSet {
 		let mut signatures = Vec::new();
 		for authority in seeds.iter() {
 			let aleph_authority = pair_from_seed(authority);
-			let signature = aleph_authority.sign(&header.hash().encode());
+			let signature = aleph_authority.sign(header_hash);
 			signatures.push(Some(Signature(signature)));
 		}
 		signatures
 	}
 
-	pub fn generate_justification(header: &Header, seeds: &Seeds) -> AlephJustification {
-		let signature_set = generate_signature_set(header, seeds);
+	pub fn generate_justification(header_hash: &[u8], seeds: &Seeds) -> AlephJustification {
+		let signature_set = generate_signature_set(header_hash, seeds);
 		AlephJustification::CommitteeMultisignature(signature_set)
 	}
 
@@ -149,8 +149,8 @@ pub mod tests {
 
 	#[test]
 	fn accepts_valid_justification() {
-		let header = test_header(5);
-		let justification = generate_justification(&header, &generate_seeds(4));
+		let header: Header = test_header(5);
+		let justification = generate_justification(&header.hash().encode(), &generate_seeds(4));
 		let authority_set = generate_authority_set(generate_seeds(4));
 
 		assert!(verify_justification(&authority_set, &header, &justification).is_ok());
@@ -158,8 +158,8 @@ pub mod tests {
 
 	#[test]
 	fn rejects_justification_with_too_little_signatures() {
-		let header = test_header(5);
-		let justification = generate_justification(&header, &generate_seeds(4));
+		let header: Header = test_header(5);
+		let justification = generate_justification(&header.hash().encode(), &generate_seeds(4));
 		let authority_set = generate_authority_set(generate_seeds(6));
 
 		assert!(verify_justification(&authority_set, &header, &justification).is_err());

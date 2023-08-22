@@ -38,6 +38,7 @@ use frame_support::sp_runtime::traits::Header;
 #[cfg(test)]
 mod mock;
 mod storage_types;
+mod benchmarking;
 
 use storage_types::StoredAuthoritySet;
 
@@ -367,6 +368,20 @@ pub mod pallet {
 			};
 
 			Ok(())
+		}
+
+		/// Initialize pallet so that it is ready for inserting new header.
+		///
+		/// The function makes sure that the new insertion will cause the pruning of some old header.
+		#[cfg(feature = "runtime-benchmarks")]
+		pub(crate) fn bootstrap_bridge(init_params: super::InitializationData<BridgedHeader<T>>) {
+			Self::initialize_bridge(init_params).expect("benchmarks are correct");
+
+			// Making sure that we will prune some old header.
+			// This is needed for benchmarking since we want to take storage write
+			// caused by pruning into account.
+			assert_eq!(ImportedHashesPointer::<T>::get(), 1);
+			ImportedHashesPointer::<T>::put(0);
 		}
 	}
 

@@ -6,7 +6,7 @@ help: # Show help for each of the Makefile recipes.
 
 .PHONY: test
 test: # Run all unit tests.
-	cargo test
+	cargo test --features runtime-benchmarks
 
 .PHONY: lint
 lint: # Run all lints.

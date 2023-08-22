@@ -19,3 +19,6 @@ sp-trie = { git = "https://github.com/paritytech/substrate", branch = "master", 
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 sp-application-crypto = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+
+# benchmarking
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "master" }

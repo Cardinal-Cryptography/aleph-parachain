@@ -6037,6 +6037,7 @@ dependencies = [
  "bp-header-chain",
  "bp-runtime",
  "bp-test-utils",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex",
